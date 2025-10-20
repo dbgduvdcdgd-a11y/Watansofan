@@ -63,7 +63,7 @@ const App: React.FC = () => {
             {/* Controls */}
             <div className="flex flex-col space-y-6">
               <ImageUploader onImageChange={handleImageChange} preview={originalImagePreview} />
-              <PromptInput value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+              <PromptInput value={prompt} onValueChange={setPrompt} />
               <ActionButton
                 onClick={handleGenerateClick}
                 disabled={!originalImage || !prompt || isLoading}
