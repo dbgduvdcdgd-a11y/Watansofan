@@ -14,11 +14,8 @@ export const editImageWithPrompt = async (
   prompt: string
 ): Promise<string> => {
   try {
-    // Moved initialization inside the function to prevent app crash on load
-    // if the environment variable is not available in the browser context.
-    if (typeof process === 'undefined' || !process.env.API_KEY) {
-      throw new Error("لم يتم تكوين مفتاح الواجهة البرمجية (API Key). يرجى التأكد من إعداده في بيئة الاستضافة.");
-    }
+    // The hosting environment is expected to provide the API key.
+    // We will proceed assuming it's available, and the API call will fail if it's not.
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
     const response = await ai.models.generateContent({
@@ -52,9 +49,11 @@ export const editImageWithPrompt = async (
 
   } catch (error) {
     console.error("Error calling Gemini API:", error);
-    if (error instanceof Error && error.message.includes('API Key')) {
-        throw error;
+    // Check for API key specific errors from the SDK and provide a user-friendly, translated message.
+    if (error instanceof Error && error.message.toLowerCase().includes('api key')) {
+        throw new Error("لم يتم تكوين مفتاح الواجهة البرمجية (API Key). يرجى التأكد من إعداده في بيئة الاستضافة.");
     }
+    // For other errors, provide a generic message.
     throw new Error('فشل تعديل الصورة. يرجى التحقق من وحدة التحكم لمزيد من التفاصيل.');
   }
 };
