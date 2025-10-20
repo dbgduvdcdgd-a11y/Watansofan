@@ -1,12 +1,6 @@
 
 import { GoogleGenAI, Modality } from "@google/genai";
 
-if (!process.env.API_KEY) {
-  throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 /**
  * Edits an image using a text prompt with the Gemini API.
  * @param base64ImageData The base64 encoded image data string (without the data: prefix).
@@ -20,6 +14,13 @@ export const editImageWithPrompt = async (
   prompt: string
 ): Promise<string> => {
   try {
+    // Moved initialization inside the function to prevent app crash on load
+    // if the environment variable is not available in the browser context.
+    if (typeof process === 'undefined' || !process.env.API_KEY) {
+      throw new Error("لم يتم تكوين مفتاح الواجهة البرمجية (API Key). يرجى التأكد من إعداده في بيئة الاستضافة.");
+    }
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
@@ -51,6 +52,9 @@ export const editImageWithPrompt = async (
 
   } catch (error) {
     console.error("Error calling Gemini API:", error);
+    if (error instanceof Error && error.message.includes('API Key')) {
+        throw error;
+    }
     throw new Error('فشل تعديل الصورة. يرجى التحقق من وحدة التحكم لمزيد من التفاصيل.');
   }
 };
